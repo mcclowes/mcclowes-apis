@@ -1,0 +1,58 @@
+{
+  "name": "what-the-fpl-api",
+  "version": "1.0.0",
+  "description": "Process FPL and Gambling API",
+  "main": "index.js",
+  "scripts": {
+    "start": "babel-node .",
+    "start:live": "DATA=live babel-node .",
+    "develop": "NODE_ENV='development' nodemon --exec babel-node .",
+    "develop:live": "DATA='live' NODE_ENV='development' nodemon --exec babel-node .",
+    "format": "prettier --write api/",
+    "format:staged": "pretty-quick --staged --pattern ./api/**",
+    "test": "jest",
+    "test:watch": "jest --watchAll"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run format:staged"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mcclowes/what-the-fpl-api.git"
+  },
+  "keywords": [
+    "fpl"
+  ],
+  "engines": {
+    "node": "12.x"
+  },
+  "author": "mcclowes",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mcclowes/what-the-fpl-api/issues"
+  },
+  "homepage": "https://github.com/mcclowes/what-the-fpl-api#readme",
+  "dependencies": {
+    "@babel/cli": "^7.14.3",
+    "@babel/core": "^7.14.6",
+    "@babel/node": "^7.13.13",
+    "@babel/plugin-transform-runtime": "^7.12.10",
+    "@babel/polyfill": "^7.12.1",
+    "@babel/preset-env": "^7.14.4",
+    "axios": "^0.21.1",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "moment": "^2.29.1",
+    "node-fetch": "^2.6.2"
+  },
+  "devDependencies": {
+    "babel-jest": "^26.6.3",
+    "husky": "^6.0.0",
+    "jest": "^26.6.3",
+    "nodemon": "^2.0.9",
+    "prettier": "^2.3.0",
+    "pretty-quick": "^3.1.1"
+  }
+}

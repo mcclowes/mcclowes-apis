@@ -1,0 +1,16 @@
+{
+  "env": {
+    "ODDS_TOKEN": "@what-the-fpl-odds-token"
+  },
+  "build": {
+    "env": {
+      "ODDS_TOKEN": "@what-the-fpl-odds-token"
+    }
+  },
+  "builds": [
+    { "src": "index.js", "use": "@now/node" }
+  ],
+  "routes": [
+    { "src": "/.*", "dest": "/index.js" }
+  ]
+}
