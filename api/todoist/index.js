@@ -39,17 +39,24 @@ todoist.getTodosDue = async () => {
   return todosDue
 };
 
-const todoBumpPriority = async (todo) => {
+const bumpPriority = async (todo) => {
   const api = new TodoistApi(process.env.TODOIST_TOKEN)
 
   await api.updateTask(
     todo.id, 
     { 
-      priority: Math.min(1, todo.priority - 1),
+      priority: Math.min(4, todo.priority + 1),
       dueString: "today",
     }
   )
     .then((isSuccess) => console.log(isSuccess))
+    .catch((error) => console.log(error))
+
+  await api.addComment({
+    taskId: todo.id,
+    content: "Updated via api.mcclowes.com",
+  })
+    .then((comment) => console.log(comment))
     .catch((error) => console.log(error))
 }
 
@@ -70,7 +77,7 @@ todoist.reprioritise = async () => {
     .filter(todo => !!todo?.due)
     .filter(todo => !todo?.due?.isRecurring)
     .filter(todo => new Date(todo.due.date) < Date.now() - 12096e5) // 2 weeks ago
-    .filter(todo => todo?.priority > 1)
+    .filter(todo => todo?.priority < 4)
 
   todosDue.forEach(todo => {
     bumpPriority(todo)
