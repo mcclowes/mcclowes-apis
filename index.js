@@ -16,7 +16,12 @@ const getAndSend = async (req, res, func) => {
   }
 }
 
-app.get('/', async (req, res) => { return 'Add something, bozo' })
+app.get('/', (req, res) => { res.send(`Available paths:
+/todos
+/todos/due
+/todos/process/reprioritise
+/todos/process/stale
+`) })
 
 app.get(`/todos${process.env.HASH}`, async (req, res) => await getAndSend(req, res, todoist.getTodos))
 
