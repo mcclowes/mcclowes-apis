@@ -1,9 +1,11 @@
-import wtf from './api/wtf'
-import fpl from './api/fpl'
-import express from 'express'
-require('dotenv').config()
+import * as dotenv from 'dotenv'
+dotenv.config({path: '.env'})
 
-const  app = express()
+import express from 'express'
+
+import todoist from './api/todoist'
+
+const app = express()
 
 const getAndSend = async (req, res, func) => {
   try {
@@ -14,27 +16,14 @@ const getAndSend = async (req, res, func) => {
   }
 }
 
-app.get('/', async (req, res) => await getAndSend(req, res, wtf.getDataAll))
+app.get('/', async (req, res) => { return 'Add something, bozo' })
 
-app.get('/rawFPLData/', async (req, res) => await getAndSend(req, res, wtf.getRawFpl))
+app.get(`/todos${process.env.HASH}`, async (req, res) => await getAndSend(req, res, todoist.getTodos))
 
-app.get('/lists/predictedScore/', async (req, res) => await getAndSend(req, res, wtf.getListPredictedScore))
+app.get(`/todos/due${process.env.HASH}`, async (req, res) => await getAndSend(req, res, todoist.getTodosDue))
 
-app.get('/lists/transfers/', async (req, res) => await getAndSend(req, res, wtf.getListTransfers))
+app.get(`/todos/process/reprioritise${process.env.HASH}`, async (req, res) => await getAndSend(req, res, todoist.reprioritise))
 
-app.get('/lists/topScore/', async (req, res) => await getAndSend(req, res, wtf.getListTopScore))
-
-app.get('/user/:userId/', async (req, res) => await getAndSend(req, res, fpl.getUser))
-
-app.get('/user/:userId/:eventId', async (req, res) => await getAndSend(req, res, fpl.getUserPicks))
-
-app.get('/teams/', async (req, res) => {
-  try{
-    const data = await wtf.getDataAll()
-    res.send(data.teams)
-  } catch(err) {
-    console.log(err)
-  }
-})
+app.get(`/todos/process/stale${process.env.HASH}`, async (req, res) => await getAndSend(req, res, todoist.killOld))
 
 app.listen(3000, () => console.log('LISTENING ON 3000'))

@@ -1,13 +1,11 @@
 {
-  "name": "what-the-fpl-api",
+  "name": "mcclowes-api",
   "version": "1.0.0",
   "description": "Process FPL and Gambling API",
   "main": "index.js",
   "scripts": {
     "start": "babel-node .",
-    "start:live": "DATA=live babel-node .",
     "develop": "NODE_ENV='development' nodemon --exec babel-node .",
-    "develop:live": "DATA='live' NODE_ENV='development' nodemon --exec babel-node .",
     "format": "prettier --write api/",
     "format:staged": "pretty-quick --staged --pattern ./api/**",
     "test": "jest",
@@ -22,9 +20,6 @@
     "type": "git",
     "url": "git+https://github.com/mcclowes/what-the-fpl-api.git"
   },
-  "keywords": [
-    "fpl"
-  ],
   "engines": {
     "node": "12.x"
   },
@@ -41,6 +36,7 @@
     "@babel/plugin-transform-runtime": "^7.12.10",
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.14.4",
+    "@doist/todoist-api-typescript": "^2.1.2",
     "axios": "^0.21.1",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
