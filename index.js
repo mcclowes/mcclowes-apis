@@ -27,8 +27,8 @@ app.get(`/todos${process.env.HASH}`, async (req, res) => await getAndSend(req, r
 
 app.get(`/todos/due${process.env.HASH}`, async (req, res) => await getAndSend(req, res, todoist.getTodosDue))
 
-app.get(`/todos/process/reprioritise${process.env.HASH}`, async (req, res) => await getAndSend(req, res, todoist.reprioritise))
+app.post(`/todos/process/reprioritise`, async (req, res) => await getAndSend(req, res, todoist.reprioritise))
 
-app.get(`/todos/process/stale${process.env.HASH}`, async (req, res) => await getAndSend(req, res, todoist.killOld))
+app.post(`/todos/process/stale`, async (req, res) => await getAndSend(req, res, todoist.killOld))
 
 app.listen(3000, () => console.log('LISTENING ON 3000'))
