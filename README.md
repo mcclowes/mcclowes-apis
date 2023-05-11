@@ -3,11 +3,16 @@
 Various utility functions.
 
 
-Available paths:
+## Available paths
+
+### Todoist
+
 /todos  
 /todos/due  
 /todos/process/reprioritise  
 /todos/process/stale  
+
+## Running the code
 
 Dev
 ```
