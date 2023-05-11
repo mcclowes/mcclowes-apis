@@ -1,6 +1,13 @@
 # mcclowes-api
 
-various
+Various utility functions.
+
+
+Available paths:
+/todos
+/todos/due
+/todos/process/reprioritise
+/todos/process/stale
 
 Dev
 ```
