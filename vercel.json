@@ -4,5 +4,7 @@
   ],
   "routes": [
     { "src": "/.*", "dest": "/index.js" }
+  ],
+  "crons": [
   ]
 }
