@@ -4,10 +4,10 @@ Various utility functions.
 
 
 Available paths:
-/todos
-/todos/due
-/todos/process/reprioritise
-/todos/process/stale
+/todos  
+/todos/due  
+/todos/process/reprioritise  
+/todos/process/stale  
 
 Dev
 ```
