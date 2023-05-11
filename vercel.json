@@ -4,15 +4,5 @@
   ],
   "routes": [
     { "src": "/.*", "dest": "/index.js" }
-  ],
-  "crons": [
-    {
-      "path": "/todos/process/reprioritise",
-      "schedule": "0 6 * * *"
-    },
-    {
-      "path": "/todos/process/stale",
-      "schedule": "0 7 1 * *"
-    }
   ]
 }
