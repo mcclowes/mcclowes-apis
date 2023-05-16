@@ -4,6 +4,8 @@ import { TodoistApi } from '@doist/todoist-api-typescript'
 
 const todoist = () => {};
 
+const getTime = days => { return 1000 * 3600 * 24 * days }
+
 todoist.getTodos = async () => {
   const api = new TodoistApi(process.env.TODOIST_TOKEN)
 
@@ -39,9 +41,7 @@ todoist.getTodosDue = async () => {
   return todosDue
 };
 
-const bumpPriority = async (todo) => {
-  const api = new TodoistApi(process.env.TODOIST_TOKEN)
-
+const bumpPriority = async (api, todo) => {
   await api.updateTask(
     todo.id, 
     { 
@@ -60,13 +60,20 @@ const bumpPriority = async (todo) => {
     .catch((error) => console.log(error))
 }
 
-const todoComplete = async (todo) => {
+const todoComplete = async (api, todo) => {
   await api.closeTask(todo.id)
     .then((isSuccess) => console.log(isSuccess))
     .catch((error) => console.log(error))
+
+  await api.addComment({
+    taskId: todo.id,
+    content: "Completed via api.mcclowes.com",
+  })
+    .then((comment) => console.log(comment))
+    .catch((error) => console.log(error))
 }
 
-todoist.reprioritise = async () => {
+const killOld = async () => {
   const api = new TodoistApi(process.env.TODOIST_TOKEN)
 
   const data = await api.getTasks()
@@ -74,39 +81,45 @@ todoist.reprioritise = async () => {
     .catch((error) => console.log(error))
 
   const todosDue = data
-    .filter(todo => !!todo?.due)
     .filter(todo => !todo?.due?.isRecurring)
-    .filter(todo => new Date(todo.due.date) < Date.now() - 12096e5) // 2 weeks ago
-    .filter(todo => todo?.priority < 4)
-
-  todosDue.forEach(todo => {
-    bumpPriority(todo)
-  })
-
-  return "DONE"
-};
-
-todoist.killOld = async () => {
-  const api = new TodoistApi(process.env.TODOIST_TOKEN)
-
-  const data = await api.getTasks()
-    .then((tasks) => { return tasks })
-    .catch((error) => console.log(error))
-
-  const todosDue = data
-    .filter(todo => !!todo?.due)
-    .filter(todo => !todo?.due?.isRecurring)
-    .filter(todo => new Date(todo.createdAt) < Date.now() - (1000 * 3600 * 24 * 200)) // 1 year ago
+    .filter(todo => new Date(todo.createdAt) < Date.now() - getTime(250))
     .filter(todo => todo?.priority > 1)
   
   todosDue.forEach(todo => {
-    todoComplete(todo)
+    todoComplete(api, todo)
   })
-
-  console.log(todosDue)
 
   return "DONE"
 };
 
+todoist.killOld = killOld;
+
+const increaseUrgency = async () => {
+  const api = new TodoistApi(process.env.TODOIST_TOKEN)
+
+  const data = await api.getTasks()
+    .then((tasks) => { return tasks })
+    .catch((error) => console.log(error))
+
+  const todosDue = data
+    .filter(todo => !!todo?.due)
+    .filter(todo => !todo?.due?.isRecurring)
+    .filter(todo => new Date(todo.due.date) < Date.now() - getTime(8))
+    .filter(todo => todo?.priority < 4)
+
+  todosDue.forEach(todo => {
+    bumpPriority(api, todo)
+  })
+
+  return "DONE"
+};
+
+const reprioritise = async () => {
+  const done = await increaseUrgency()
+  const done2 = await killOld()
+  return done + " " + done2
+}
+
+todoist.reprioritise = reprioritise;
 
 export default todoist;
