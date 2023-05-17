@@ -29,8 +29,10 @@ app.get(`/todos/due${process.env.HASH}`, async (req, res) => await getAndSend(re
 
 app.get(`/todos/summarize${process.env.HASH}`, async (req, res) => await getAndSend(req, res, todoist.summarize))
 
-app.get(`/todos/process/reprioritise`, async (req, res) => await getAndSend(req, res, todoist.reprioritise))
+app.get(`/todos/process/reprioritize`, async (req, res) => await getAndSend(req, res, todoist.reprioritize))
 
 app.get(`/todos/process/stale`, async (req, res) => await getAndSend(req, res, todoist.killOld))
+
+app.get(`/todos/process/categorize`, async (req, res) => await getAndSend(req, res, todoist.categorize))
 
 app.listen(3000, () => console.log('LISTENING ON 3000'))

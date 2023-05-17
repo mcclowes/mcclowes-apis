@@ -7,7 +7,17 @@ const todoist = () => {};
 
 const getTime = days => { return 1000 * 3600 * 24 * days }
 
-todoist.getTodos = async () => {
+const getLabels = async () => {
+  const api = new TodoistApi(process.env.TODOIST_TOKEN)
+
+  const labels = await api.getLabels()
+    .then((labels) => { return labels })
+    .catch((error) => console.log(error))
+
+  return labels
+};
+
+const getTodos = async () => {
   const api = new TodoistApi(process.env.TODOIST_TOKEN)
 
   const todos = await api.getTasks()
@@ -16,6 +26,8 @@ todoist.getTodos = async () => {
 
   return todos
 };
+
+todoist.getTodos = getTodos;
 
 todoist.getTodosContent = async () => {
   const api = new TodoistApi(process.env.TODOIST_TOKEN)
@@ -27,7 +39,7 @@ todoist.getTodosContent = async () => {
   return todos.map(todo => todo.content)
 };
 
-const getTodosDue = async (minPriority=4) => {
+const getTodosDue = async (full=false, minPriority=0) => {
   const api = new TodoistApi(process.env.TODOIST_TOKEN)
 
   const data = await api.getTasks()
@@ -37,8 +49,8 @@ const getTodosDue = async (minPriority=4) => {
   const todosDue = data
     .filter(todo => !!todo?.due )
     .filter(todo => new Date(todo.due.date) < Date.now())
-    .filter(todo => todo?.priority < 4)
-    .map(todo => todo.content)
+    .filter(todo => todo?.priority > minPriority)
+    .map(todo => full ? todo : todo.content)
 
   return todosDue
 };
@@ -53,14 +65,12 @@ const bumpPriority = async (api, todo) => {
       dueString: "today",
     }
   )
-    .then((isSuccess) => console.log(isSuccess))
     .catch((error) => console.log(error))
 
   await api.addComment({
     taskId: todo.id,
     content: "Updated via api.mcclowes.com",
   })
-    .then((comment) => console.log(comment))
     .catch((error) => console.log(error))
 }
 
@@ -73,7 +83,6 @@ const todoComplete = async (api, todo) => {
     taskId: todo.id,
     content: "Completed via api.mcclowes.com",
   })
-    .then((comment) => console.log(comment))
     .catch((error) => console.log(error))
 }
 
@@ -118,17 +127,23 @@ const increaseUrgency = async () => {
   return "DONE"
 };
 
-const reprioritise = async () => {
+const reprioritize = async () => {
   const done = await increaseUrgency()
   const done2 = await killOld()
 
   return done + " " + done2
 }
 
-todoist.reprioritise = reprioritise;
+todoist.reprioritize = reprioritize;
 
 const summarize = async () => {
-  const todos = await getTodosDue(3);
+  const todos = await getTodosDue(false, 3);
+
+  const configuration = new Configuration({
+    apiKey: process.env.OPENAI_KEY,
+  });
+
+  const openai = new OpenAIApi(configuration);
 
   const prompt = `This is my todo list in a JSON format:
     ${todos}
@@ -143,12 +158,6 @@ const summarize = async () => {
 
     Please answer in only 120 tokens.
   `
-
-  const configuration = new Configuration({
-    apiKey: process.env.OPENAI_KEY,
-  });
-
-  const openai = new OpenAIApi(configuration);
 
   const messages = [
     {"role": "system", "content": `
@@ -184,5 +193,92 @@ const summarize = async () => {
 }
 
 todoist.summarize = summarize;
+
+const invalidLabels = [
+  "✅_streak",
+  "Easy",
+  "Medium",
+  "Hard",
+  "reclaim",
+  "Year",
+  "Goal",
+  "someone_else",
+  "Reclaim_personal",
+]
+
+const addLabel = async (todo, label, validLabels) => {
+  const apiTodoist = new TodoistApi(process.env.TODOIST_TOKEN)
+  const labelProcessed = label.replace(/[^\w\s]/gi, '')
+
+  if (label === "null" || validLabels.map(label=>label.name).indexOf(labelProcessed) === -1) { return false }
+
+  await apiTodoist.updateTask(
+    todo.id, 
+    { 
+      labels: [...todo.labels, labelProcessed]
+    }
+  )
+    .catch((error) => console.log(error))
+
+  await apiTodoist.addComment({
+    taskId: todo.id,
+    content: "Updated via api.mcclowes.com",
+  })
+    .catch((error) => console.log(error))
+
+  return true
+}
+
+const categorizeTask = async (todo, validLabels) => {
+  const configuration = new Configuration({
+    apiKey: process.env.OPENAI_KEY,
+  });
+
+  const openai = new OpenAIApi(configuration);
+
+  const messages = [
+    {"role": "system", "content": `You are a helpful personal assistant. Your job is to categorize items in todolists.`},
+    {"role": "system", "content": `
+    You must always respond with a one word answer.
+
+    The only words you can say are: ${validLabels.map(label => label.name).join(", ")}, null.
+
+    If you're very uncertain, just respond 'null'.
+    `},
+    {"role": "user", "content": `I will give you a task from my todolist, and I want you to think of a word corresponding with that task. What is an appropriate word for the following task: ${todo.content}`},
+  ]
+
+  const response = await openai.createChatCompletion({
+    model: "gpt-3.5-turbo",
+    messages: messages,
+    temperature: 0.8,
+    presence_penalty: 0.2,
+    max_tokens: 3,
+  })
+
+  const label = response.data.choices[0].message.content
+
+  await addLabel(todo, label, validLabels)
+}
+
+const categorizeTasks = async (todos, validLabels) => {
+  return Promise.all(todos.map(todo => categorizeTask(todo, validLabels)))
+}
+
+const categorize = async () => {
+  const todos = await getTodosDue(true, 0)
+  const todosToCategorize = todos?.filter(todo => todo.labels?.length <= 1)
+    .filter((todo, i) => i <= 15)
+
+  const labels = await getLabels()
+  const validLabels = labels
+    .filter(label => invalidLabels.indexOf(label.name) === -1)
+
+  const repsonses = await categorizeTasks(todosToCategorize, validLabels)
+
+  return repsonses
+}
+
+todoist.categorize = categorize;
 
 export default todoist;
