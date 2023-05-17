@@ -137,9 +137,11 @@ const summarize = async () => {
 
     My priority is my health, and completing tasks that are likely to be quick to complete.
 
-    Can you summarise my todo list? Please pull out the key themes of the list, with examples.
+    Can you summarise my todo list? Please pull out the key themes of the list, with an example for each.
 
     Then, please suggest the first three tasks I may wish to tackle.
+
+    Please answer in only 120 tokens.
   `
 
   const configuration = new Configuration({
@@ -155,12 +157,27 @@ const summarize = async () => {
     I trust your judgement when it comes to executive summaries, as I will ultimately double-check your suggestions.
     When answering, don't repeat elements of the prompt, as the answer should be easy to read.
     `},
+    {"role": "system", "content": `
+    Your summarization should take the following structure...
+    
+    Key themes:
+    - theme - example
+    - theme - example
+
+    Key tasks:
+    - task
+    - task
+    - task
+    `},
     {"role": "user", "content": prompt},
   ]
 
   const response = await openai.createChatCompletion({
     model: "gpt-3.5-turbo",
     messages: messages,
+    temperature: 0.8,
+    presence_penalty: 0.2,
+    max_tokens: 120,
   })
 
   return response.data.choices[0].message.content;
