@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "babel-node .",
-    "develop": "NODE_ENV='development' nodemon --exec babel-node .",
+    "dev": "NODE_ENV='development' nodemon --exec babel-node .",
     "format": "prettier --write api/",
     "format:staged": "pretty-quick --staged --pattern ./api/**",
     "test": "jest",
@@ -41,7 +41,8 @@
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "moment": "^2.29.1",
-    "node-fetch": "^2.6.2"
+    "node-fetch": "^2.6.2",
+    "openai": "^3.2.1"
   },
   "devDependencies": {
     "babel-jest": "^26.6.3",

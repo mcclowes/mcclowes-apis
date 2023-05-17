@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
 
 import { TodoistApi } from '@doist/todoist-api-typescript'
+import { Configuration, OpenAIApi } from "openai";
 
 const todoist = () => {};
 
@@ -26,7 +27,7 @@ todoist.getTodosContent = async () => {
   return todos.map(todo => todo.content)
 };
 
-todoist.getTodosDue = async () => {
+const getTodosDue = async (minPriority=4) => {
   const api = new TodoistApi(process.env.TODOIST_TOKEN)
 
   const data = await api.getTasks()
@@ -36,10 +37,13 @@ todoist.getTodosDue = async () => {
   const todosDue = data
     .filter(todo => !!todo?.due )
     .filter(todo => new Date(todo.due.date) < Date.now())
+    .filter(todo => todo?.priority < 4)
     .map(todo => todo.content)
 
   return todosDue
 };
+
+todoist.getTodosDue = getTodosDue
 
 const bumpPriority = async (api, todo) => {
   await api.updateTask(
@@ -117,9 +121,51 @@ const increaseUrgency = async () => {
 const reprioritise = async () => {
   const done = await increaseUrgency()
   const done2 = await killOld()
+
   return done + " " + done2
 }
 
 todoist.reprioritise = reprioritise;
+
+const summarize = async () => {
+  const todos = await getTodosDue(3);
+
+  const prompt = `This is my todo list in a JSON format:
+    ${todos}
+
+    The tasks due most imminently are at the top of the list.
+
+    My priority is my health, and completing tasks that are likely to be quick to complete.
+
+    Can you summarise my todo list? Please pull out the key themes of the list, with examples.
+
+    Then, please suggest the first three tasks I may wish to tackle.
+  `
+
+  const configuration = new Configuration({
+    apiKey: process.env.OPENAI_KEY,
+  });
+
+  const openai = new OpenAIApi(configuration);
+
+  const messages = [
+    {"role": "system", "content": `
+    You are a helpful personal assistant. 
+    Your key role is helping me understand my day and make sense of my priorities.
+    I trust your judgement when it comes to executive summaries, as I will ultimately double-check your suggestions.
+    When answering, don't repeat elements of the prompt, as the answer should be easy to read.
+    `},
+    {"role": "user", "content": prompt},
+  ]
+
+  const response = await openai.createChatCompletion({
+    model: "gpt-3.5-turbo",
+    messages: messages,
+  })
+
+  return response.data.choices[0].message.content;
+}
+
+todoist.summarize = summarize;
 
 export default todoist;
