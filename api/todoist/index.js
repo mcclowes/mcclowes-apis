@@ -3,13 +3,16 @@ import fetch from 'node-fetch';
 import { TodoistApi } from '@doist/todoist-api-typescript'
 import { Configuration, OpenAIApi } from "openai";
 
+import uuid4 from "uuid4";
+
+const PROJECT_ID_INBOX = "2254468009"
+const PROJECT_ID_FOCUSED = "2299051453"
+
 const todoist = () => {};
 
 const getTime = days => { return 1000 * 3600 * 24 * days }
 
-const getLabels = async () => {
-  const api = new TodoistApi(process.env.TODOIST_TOKEN)
-
+const getLabels = async (api) => {
   const labels = await api.getLabels()
     .then((labels) => { return labels })
     .catch((error) => console.log(error))
@@ -17,9 +20,7 @@ const getLabels = async () => {
   return labels
 };
 
-const getTodos = async () => {
-  const api = new TodoistApi(process.env.TODOIST_TOKEN)
-
+const getTodos = async (api) => {
   const todos = await api.getTasks()
     .then((tasks) => { return tasks })
     .catch((error) => console.log(error))
@@ -27,11 +28,21 @@ const getTodos = async () => {
   return todos
 };
 
-todoist.getTodos = getTodos;
-
-todoist.getTodosContent = async () => {
+todoist.getTodos = () => {
   const api = new TodoistApi(process.env.TODOIST_TOKEN)
 
+  return getTodos(api)
+};
+
+const getTodosFocused = async (api) => {
+  const todos = await api.getTasks({ project_id: PROJECT_ID_FOCUSED })
+    .then((tasks) => { return tasks })
+    .catch((error) => console.log(error))
+
+  return todos
+};
+
+const getTodosContent = async (api) => {
   const todos = await api.getTasks()
     .then((tasks) => { return tasks })
     .catch((error) => console.log(error))
@@ -39,9 +50,7 @@ todoist.getTodosContent = async () => {
   return todos.map(todo => todo.content)
 };
 
-const getTodosDue = async (full=false, minPriority=0) => {
-  const api = new TodoistApi(process.env.TODOIST_TOKEN)
-
+const getTodosDue = async (api, full=false, minPriority=0) => {
   const data = await api.getTasks()
     .then((tasks) => { return tasks })
     .catch((error) => console.log(error))
@@ -55,7 +64,11 @@ const getTodosDue = async (full=false, minPriority=0) => {
   return todosDue
 };
 
-todoist.getTodosDue = getTodosDue
+todoist.getTodosDue = () => {
+  const api = new TodoistApi(process.env.TODOIST_TOKEN)
+  
+  return getTodosDue(api)
+};
 
 const bumpPriority = async (api, todo) => {
   await api.updateTask(
@@ -86,9 +99,7 @@ const todoComplete = async (api, todo) => {
     .catch((error) => console.log(error))
 }
 
-const killOld = async () => {
-  const api = new TodoistApi(process.env.TODOIST_TOKEN)
-
+const killOld = async (api) => {
   const data = await api.getTasks()
     .then((tasks) => { return tasks })
     .catch((error) => console.log(error))
@@ -105,11 +116,13 @@ const killOld = async () => {
   return "DONE"
 };
 
-todoist.killOld = killOld;
-
-const increaseUrgency = async () => {
+todoist.killOld = () => {
   const api = new TodoistApi(process.env.TODOIST_TOKEN)
 
+  return killOld(api);
+}
+
+const increaseUrgency = async (api) => {
   const data = await api.getTasks()
     .then((tasks) => { return tasks })
     .catch((error) => console.log(error))
@@ -128,16 +141,21 @@ const increaseUrgency = async () => {
 };
 
 const reprioritize = async () => {
-  const done = await increaseUrgency()
-  const done2 = await killOld()
+  const api = new TodoistApi(process.env.TODOIST_TOKEN)
 
-  return done + " " + done2
+  const done1 = await increaseUrgency(api)
+  const done2 = await killOld(api)
+  const done3 = await newDay()
+
+  return done1 + " " + done2 " " + done3
 }
 
 todoist.reprioritize = reprioritize;
 
 const summarize = async () => {
-  const todos = await getTodosDue(false, 3);
+  const api = new TodoistApi(process.env.TODOIST_TOKEN)
+
+  const todos = await getTodosDue(api, false, 3);
 
   const configuration = new Configuration({
     apiKey: process.env.OPENAI_KEY,
@@ -208,6 +226,7 @@ const invalidLabels = [
 
 const addLabel = async (todo, label, validLabels) => {
   const apiTodoist = new TodoistApi(process.env.TODOIST_TOKEN)
+
   const labelProcessed = label.replace(/[^\w\s]/gi, '')
 
   if (label === "null" || validLabels.map(label=>label.name).indexOf(labelProcessed) === -1) { return false }
@@ -266,7 +285,9 @@ const categorizeTasks = async (todos, validLabels) => {
 }
 
 const categorize = async () => {
-  const todos = await getTodosDue(true, 0)
+  const api = new TodoistApi(process.env.TODOIST_TOKEN)
+
+  const todos = await getTodosDue(api, true, 0)
   const todosToCategorize = todos?.filter(todo => todo.labels?.length <= 1)
     .filter((todo, i) => i <= 15)
 
@@ -280,5 +301,50 @@ const categorize = async () => {
 }
 
 todoist.categorize = categorize;
+
+const moveToInbox = async (api, todos) => {
+  const body = {
+    commands: [
+      ...todos.map(todo => {
+        return {
+          type: "item_move",
+          args: {
+            id: todo.id, 
+            "project_id": PROJECT_ID_INBOX 
+          },
+          uuid: uuid4(),
+        }
+      })
+    ],
+  }
+
+  const response = await fetch(
+    "https://api.todoist.com/sync/v9/sync",
+    {
+      method: 'POST',
+      headers: {
+        "Authorization": `Bearer ${process.env.TODOIST_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    }
+  )
+    .then((res) => { return res.json() })
+    .catch((error) => console.log(error))
+
+  return
+}
+
+const newDay = async () => {
+  const api = new TodoistApi(process.env.TODOIST_TOKEN)
+
+  const todos = await getTodosFocused(api)
+
+  moveToInbox(api, todos)
+
+  return 'DONE'
+}
+
+todoist.newDay = newDay;
 
 export default todoist;

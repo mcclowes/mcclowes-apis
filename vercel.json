@@ -7,8 +7,8 @@
   ],
   "crons": [
     {
-      "path": "/todos/process/reprioritise",
-      "schedule": "0 6 * * *"
+      "path": "/todos/process/reprioritize",
+      "schedule": "0 3 * * *"
     }
   ]
 }
