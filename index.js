@@ -3,7 +3,7 @@ dotenv.config({path: '.env'})
 
 import express from 'express'
 
-import todoist from './api/todoist'
+import todoist from './api/todoist.js'
 
 const app = express()
 
