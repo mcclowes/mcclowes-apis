@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Process FPL and Gambling API",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "babel-node .",
     "dev": "NODE_ENV='development' nodemon --exec babel-node .",
