@@ -147,7 +147,7 @@ const reprioritize = async () => {
   const done2 = await killOld(api)
   const done3 = await newDay()
 
-  return done1 + " " + done2 " " + done3
+  return done1 + " " + done2 + " " + done3
 }
 
 todoist.reprioritize = reprioritize;
