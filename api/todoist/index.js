@@ -340,7 +340,7 @@ const newDay = async () => {
 
   const todos = await getTodosFocused(api)
 
-  moveToInbox(api, todos)
+  await moveToInbox(api, todos)
 
   return 'DONE'
 }
