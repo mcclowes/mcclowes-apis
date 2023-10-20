@@ -22,6 +22,7 @@ app.get('/', (req, res) => { res.send(`Available paths:
 /todos/process/reprioritize
 /todos/process/stale
 /todos/process/new-day
+/todos/process/new-day-focus
 `) })
 
 app.get(`/todos${process.env.HASH}`, async (req, res) => await getAndSend(req, res, todoist.getTodos))
@@ -37,5 +38,7 @@ app.get(`/todos/process/stale`, async (req, res) => await getAndSend(req, res, t
 app.get(`/todos/process/categorize`, async (req, res) => await getAndSend(req, res, todoist.categorize))
 
 app.get(`/todos/process/new-day`, async (req, res) => await getAndSend(req, res, todoist.newDay))
+
+app.get(`/todos/process/new-day-focus`, async (req, res) => await getAndSend(req, res, todoist.newDayFocus))
 
 app.listen(3000, () => console.log('LISTENING ON 3000'))
