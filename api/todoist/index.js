@@ -65,7 +65,7 @@ const newFocus = async () => {
 
   todos.sort((a,b) => a.priority - b.priority)
 
-  await moveToProject(api, todos, PROJECT_ID_FOCUSED)
+  await moveToProject(api, todos.slice(5), PROJECT_ID_FOCUSED)
 
   return 'DONE'
 }
