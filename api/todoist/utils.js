@@ -1,8 +1,13 @@
+import fetch from 'node-fetch';
 import uuid4 from "uuid4";
+
+const NTFY_URL = 'https://ntfy.sh/mcclowes_api'
 
 export const PROJECT_ID_INBOX = "2254468009"
 export const PROJECT_ID_FOCUSED = "2299051453"
 export const PROJECT_ID_NEXT = "2322253936"
+
+const getTime = days => { return 1000 * 3600 * 24 * days }
 
 const getLabels = async (api) => {
   const labels = await api.getLabels()
@@ -79,7 +84,7 @@ const bumpPriority = async (api, todo) => {
     .catch((error) => console.log(error))
 }
 
-const killOld = async (api) => {
+export const killOld = async (api) => {
   const data = await api.getTasks()
     .then((tasks) => { return tasks })
     .catch((error) => console.log(error))
@@ -91,6 +96,11 @@ const killOld = async (api) => {
   
   todosDue.forEach(todo => {
     completeTodo(api, todo)
+  })
+
+  fetch(NTFY_URL, {
+    method: 'POST', // PUT works too
+    body: 'Killed old todos'
   })
 
   return "DONE"

@@ -18,8 +18,6 @@ import { categorize, summarize } from './gpt'
 
 const todoist = () => {};
 
-const getTime = days => { return 1000 * 3600 * 24 * days }
-
 todoist.getTodos = () => {
   const api = new TodoistApi(process.env.TODOIST_TOKEN)
 
