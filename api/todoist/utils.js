@@ -101,6 +101,11 @@ export const killOld = async (api) => {
   fetch(NTFY_URL, {
     method: 'POST', // PUT works too
     body: 'Killed old todos'
+    headers: {
+      'Title': 'api.mcclowes.com',
+      'Priority': '1',
+      'Tags': 'wastebasket'
+    }
   })
 
   return "DONE"
