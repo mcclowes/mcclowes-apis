@@ -21,7 +21,7 @@ const todoist = () => {};
 todoist.getTodos = () => {
   const api = new TodoistApi(process.env.TODOIST_TOKEN)
 
-  return getTodosAll(api) //should this be awaited?
+  return getTodosAll(api) // should this be awaited?
 };
 
 todoist.getTodosDue = () => {
