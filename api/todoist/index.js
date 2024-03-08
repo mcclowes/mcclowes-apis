@@ -61,7 +61,7 @@ const newFocus = async () => {
   const api = new TodoistApi(process.env.TODOIST_TOKEN)
   const todos = await getTodos(api, PROJECT_ID_NEXT)
 
-  todos.sort((a,b) => a.priority - b.priority)
+  todos.sort((a,b) => b.priority - a.priority)
 
   await moveToProject(api, todos.slice(0, 5), PROJECT_ID_FOCUSED)
 
