@@ -67,6 +67,16 @@ const completeTodo = async (api, todo) => {
     .catch((error) => console.log(error))
 }
 
+// export const setDue = async (api, todo) => {
+//   await api.updateTask(
+//     todo.id,
+//     { 
+//       due_datetime: new Date(),
+//     }
+//   )
+//     .catch((error) => console.log(error))
+// }
+
 const bumpPriority = async (api, todo) => {
   await api.updateTask(
     todo.id, 
@@ -137,7 +147,8 @@ export const moveToProject = async (api, todos, project=PROJECT_ID_INBOX) => {
           type: "item_move",
           args: {
             id: todo.id, 
-            "project_id": project 
+            "project_id": project,
+            due_datetime: !todo?.due_datetime ? new Date() : todo.due_datetime,
           },
           uuid: uuid4(),
         }
