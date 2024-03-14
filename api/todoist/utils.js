@@ -94,6 +94,12 @@ const bumpPriority = async (api, todo) => {
     .catch((error) => console.log(error))
 }
 
+export const bumpPriorities = async (api, todos) => {
+  todos.forEach(async todo => {
+    await bumpPriority(api, todo)
+  })
+}
+
 export const killOld = async (api) => {
   const data = await api.getTasks()
     .then((tasks) => { return tasks })
@@ -132,9 +138,7 @@ export const increaseUrgency = async (api) => {
     .filter(todo => new Date(todo.due.date) < Date.now() - getTime(8))
     .filter(todo => todo?.priority < 4)
 
-  todosDue.forEach(todo => {
-    bumpPriority(api, todo)
-  })
+  bumpPriorities(todosDue)
 
   return "DONE"
 };
@@ -148,7 +152,6 @@ export const moveToProject = async (api, todos, project=PROJECT_ID_INBOX) => {
           args: {
             id: todo.id, 
             "project_id": project,
-            due_datetime: !todo?.due_datetime ? new Date() : todo.due_datetime,
           },
           uuid: uuid4(),
         }

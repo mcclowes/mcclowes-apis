@@ -4,6 +4,7 @@ import { TodoistApi } from '@doist/todoist-api-typescript'
 import { Configuration, OpenAIApi } from "openai";
 
 import {
+  bumpPriorities,
   getTodos,
   getTodosAll,
   getTodosDue,
@@ -63,7 +64,11 @@ const newFocus = async () => {
 
   todos.sort((a,b) => b.priority - a.priority)
 
-  await moveToProject(api, todos.slice(0, 5), PROJECT_ID_FOCUSED)
+  const focusTodos = todos.slice(0, 5)
+
+  console.log(focusTodos)
+  await bumpPriorities(api, focusTodos)
+  await moveToProject(api, focusTodos, PROJECT_ID_FOCUSED)
 
   return 'DONE'
 }
