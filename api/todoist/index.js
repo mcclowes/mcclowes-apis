@@ -13,7 +13,6 @@ import {
   moveToProject,
   PROJECT_ID_INBOX,
   PROJECT_ID_FOCUSED,
-  PROJECT_ID_NEXT,
 } from './utils'
 import { categorize, summarize } from './gpt'
 
@@ -60,7 +59,7 @@ todoist.newDay = clearOld;
 
 const newFocus = async () => {
   const api = new TodoistApi(process.env.TODOIST_TOKEN)
-  const todos = await getTodos(api, PROJECT_ID_NEXT)
+  const todos = await getTodos(api, PROJECT_ID_INBOX)
 
   todos.sort((a,b) => b.priority - a.priority)
 
