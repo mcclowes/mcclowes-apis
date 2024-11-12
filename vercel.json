@@ -10,5 +10,10 @@
       "path": "/todos/process/reprioritize",
       "schedule": "0 3 * * *"
     }
-  ]
+  ],
+  "functions": {
+    "api/*.js": {
+      "maxDuration": 60 // These functions can run for a maximum of 60 seconds
+    }
+  }
 }

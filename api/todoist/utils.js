@@ -5,6 +5,7 @@ const NTFY_URL = 'https://ntfy.sh/mcclowes_api'
 
 export const PROJECT_ID_INBOX = "2254468009"
 export const PROJECT_ID_FOCUSED = "2299051453"
+export const PROJECT_ID_WORK = "2304777035"
 
 const getTime = days => { return 1000 * 3600 * 24 * days }
 
