@@ -95,6 +95,8 @@ const bumpPriority = async (api, todo) => {
 }
 
 export const bumpPriorities = async (api, todos) => {
+  if (!todos || todos.length === 0) return []
+  
   todos.forEach(async todo => {
     await bumpPriority(api, todo)
   })
