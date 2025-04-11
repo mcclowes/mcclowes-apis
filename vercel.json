@@ -7,19 +7,19 @@
   ],
   "crons": [
     {
-      "path": "/todos/process/reprioritize",
+      "path": "/todos/process/reprioritize?hash=${HASH}",
       "schedule": "0 2 * * *"
     },
     {
-      "path": "/todos/process/new-day",
+      "path": "/todos/process/new-day?hash=${HASH}",
       "schedule": "0 3 * * *"
     },
     {
-      "path": "/todos/process/new-day-focus",
+      "path": "/todos/process/new-day-focus?hash=${HASH}",
       "schedule": "0 4 * * *"
     },
     {
-      "path": "/todos/process/stale",
+      "path": "/todos/process/stale?hash=${HASH}",
       "schedule": "0 3 1 * *"
     }
   ]

@@ -1,7 +1,5 @@
-import fetch from 'node-fetch';
-import { TodoistApi } from '@doist/todoist-api-typescript'
-import { Configuration, OpenAIApi } from "openai";
-import { ExternalServiceError, NotFoundError } from '../errors/AppError';
+import { TodoistApi } from "@doist/todoist-api-typescript";
+import { ExternalServiceError, NotFoundError } from "../errors/AppError";
 
 import {
   bumpPriorities,
@@ -13,14 +11,14 @@ import {
   moveToProject,
   PROJECT_ID_INBOX,
   PROJECT_ID_FOCUSED,
-} from './utils'
-import { categorize, summarize } from './gpt'
+} from "./utils";
+import { categorize, summarize } from "./gpt";
 
 const todoist = () => {};
 
 const createTodoistApi = () => {
   if (!process.env.TODOIST_TOKEN) {
-    throw new ExternalServiceError('TODOIST_TOKEN is not configured');
+    throw new ExternalServiceError("TODOIST_TOKEN is not configured");
   }
   return new TodoistApi(process.env.TODOIST_TOKEN);
 };
@@ -39,7 +37,9 @@ todoist.getTodosDue = async () => {
   try {
     return await getTodosDue(api);
   } catch (error) {
-    throw new ExternalServiceError(`Failed to fetch due todos: ${error.message}`);
+    throw new ExternalServiceError(
+      `Failed to fetch due todos: ${error.message}`
+    );
   }
 };
 
@@ -48,7 +48,9 @@ todoist.killOld = async () => {
   try {
     return await killOld(api);
   } catch (error) {
-    throw new ExternalServiceError(`Failed to process old todos: ${error.message}`);
+    throw new ExternalServiceError(
+      `Failed to process old todos: ${error.message}`
+    );
   }
 };
 
@@ -60,7 +62,9 @@ const reprioritize = async () => {
     const done3 = await newDay();
     return `${done1} ${done2} ${done3}`;
   } catch (error) {
-    throw new ExternalServiceError(`Failed to reprioritize todos: ${error.message}`);
+    throw new ExternalServiceError(
+      `Failed to reprioritize todos: ${error.message}`
+    );
   }
 };
 todoist.reprioritize = reprioritize;
@@ -70,15 +74,17 @@ const clearOld = async () => {
   try {
     const todos = await getTodos(api, PROJECT_ID_FOCUSED);
     if (!todos || todos.length === 0) {
-      throw new NotFoundError('No todos found in focused project');
+      throw new NotFoundError("No todos found in focused project");
     }
     await moveToProject(api, todos, PROJECT_ID_INBOX);
-    return 'DONE';
+    return "DONE";
   } catch (error) {
     if (error instanceof NotFoundError) {
       throw error;
     }
-    throw new ExternalServiceError(`Failed to clear old todos: ${error.message}`);
+    throw new ExternalServiceError(
+      `Failed to clear old todos: ${error.message}`
+    );
   }
 };
 todoist.newDay = clearOld;
@@ -88,19 +94,19 @@ const newFocus = async () => {
   try {
     const todos = await getTodos(api, PROJECT_ID_INBOX);
     if (!todos || todos.length === 0) {
-      throw new NotFoundError('No todos found in inbox project');
+      throw new NotFoundError("No todos found in inbox project");
     }
 
     todos.sort((a, b) => b.priority - a.priority);
     const focusTodos = todos.slice(0, 5);
 
     if (focusTodos.length === 0) {
-      throw new NotFoundError('No todos available to focus');
+      throw new NotFoundError("No todos available to focus");
     }
 
     await bumpPriorities(api, focusTodos);
     await moveToProject(api, focusTodos, PROJECT_ID_FOCUSED);
-    return 'DONE';
+    return "DONE";
   } catch (error) {
     if (error instanceof NotFoundError) {
       throw error;
@@ -114,7 +120,9 @@ todoist.summarize = async () => {
   try {
     return await summarize();
   } catch (error) {
-    throw new ExternalServiceError(`Failed to summarize todos: ${error.message}`);
+    throw new ExternalServiceError(
+      `Failed to summarize todos: ${error.message}`
+    );
   }
 };
 
@@ -122,7 +130,9 @@ todoist.categorize = async () => {
   try {
     return await categorize();
   } catch (error) {
-    throw new ExternalServiceError(`Failed to categorize todos: ${error.message}`);
+    throw new ExternalServiceError(
+      `Failed to categorize todos: ${error.message}`
+    );
   }
 };
 

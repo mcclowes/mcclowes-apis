@@ -1,16 +1,16 @@
-import { AppError } from './AppError';
+import { AppError } from "./AppError";
 
 const handleError = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
-  err.status = err.status || 'error';
+  err.status = err.status || "error";
 
   // Development error response
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     res.status(err.statusCode).json({
       status: err.status,
       error: err,
       message: err.message,
-      stack: err.stack
+      stack: err.stack,
     });
     return;
   }
@@ -20,17 +20,17 @@ const handleError = (err, req, res, next) => {
     res.status(err.statusCode).json({
       status: err.status,
       code: err.code,
-      message: err.message
+      message: err.message,
     });
     return;
   }
 
   // Programming or unknown errors: don't leak error details
-  console.error('ERROR 💥', err);
+  console.error("ERROR 💥", err);
   res.status(500).json({
-    status: 'error',
-    code: 'INTERNAL_SERVER_ERROR',
-    message: 'Something went wrong!'
+    status: "error",
+    code: "INTERNAL_SERVER_ERROR",
+    message: "Something went wrong!",
   });
 };
 
@@ -40,4 +40,4 @@ const handleAsync = (fn) => {
   };
 };
 
-export { handleError, handleAsync }; 
+export { handleError, handleAsync };

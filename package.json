@@ -6,7 +6,7 @@
   "scripts": {
     "start": "babel-node .",
     "dev": "NODE_ENV='development' nodemon --exec babel-node .",
-    "format": "prettier --write api/",
+    "format": "prettier --write \"api/**/*.js\"",
     "format:staged": "pretty-quick --staged --pattern ./api/**",
     "test": "jest",
     "test:watch": "jest --watchAll"
