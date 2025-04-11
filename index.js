@@ -47,9 +47,20 @@ const handleCronJob = (handler) => async (req, res) => {
 };
 
 // Serve Swagger documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
+app.use('/api-docs', (req, res, next) => {
+  // Skip hash validation for Swagger UI
+  if (req.path === '/') {
+    next();
+  } else {
+    validateHash(req, res, next);
+  }
+}, swaggerUi.serve, swaggerUi.setup(specs, {
   explorer: true,
   customCss: '.swagger-ui .topbar { display: none }',
+  swaggerOptions: {
+    persistAuthorization: true,
+    displayRequestDuration: true,
+  },
 }));
 
 const getAndSend = handleAsync(async (req, res, func) => {
