@@ -48,8 +48,13 @@ const handleCronJob = (handler) => async (req, res) => {
 
 // Serve Swagger documentation
 app.use('/api-docs', (req, res, next) => {
-  // Skip hash validation for Swagger UI
-  if (req.path === '/') {
+  // Skip hash validation for Swagger UI static files and the main UI page
+  if (req.path === '/' || 
+      req.path.endsWith('.css') || 
+      req.path.endsWith('.js') || 
+      req.path.endsWith('.html') ||
+      req.path.endsWith('.png') ||
+      req.path.endsWith('.map')) {
     next();
   } else {
     validateHash(req, res, next);
