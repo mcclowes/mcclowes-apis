@@ -2,12 +2,23 @@ import * as dotenv from 'dotenv'
 dotenv.config({path: '.env'})
 
 import express from 'express'
+import swaggerUi from 'swagger-ui-express'
 import { handleError, handleAsync } from './api/errors/errorHandler'
 import { AuthenticationError } from './api/errors/AppError'
+import { specs } from './api/docs/swagger'
 
 import todoist from './api/todoist'
 
 const app = express()
+
+// Middleware to validate hash authentication
+const validateHash = (req, res, next) => {
+  const hash = req.query.hash || req.params.hash;
+  if (!hash || hash !== process.env.HASH) {
+    throw new AuthenticationError('Invalid or missing authentication hash');
+  }
+  next();
+};
 
 // Middleware to validate cron job authentication
 const validateCronJob = (req, res, next) => {
@@ -34,6 +45,12 @@ const handleCronJob = (handler) => async (req, res) => {
     });
   }
 };
+
+// Serve Swagger documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
+  explorer: true,
+  customCss: '.swagger-ui .topbar { display: none }',
+}));
 
 const getAndSend = handleAsync(async (req, res, func) => {
   const data = await func(req.params)

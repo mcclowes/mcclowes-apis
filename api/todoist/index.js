@@ -23,6 +23,32 @@ const createTodoistApi = () => {
   return new TodoistApi(process.env.TODOIST_TOKEN);
 };
 
+/**
+ * @swagger
+ * /todos:
+ *   get:
+ *     summary: Get all todos
+ *     description: Retrieves all todos from Todoist
+ *     tags: [Todos]
+ *     responses:
+ *       200:
+ *         description: List of todos retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                   content:
+ *                     type: string
+ *                   priority:
+ *                     type: integer
+ *       500:
+ *         description: Server error
+ */
 todoist.getTodos = async () => {
   const api = createTodoistApi();
   try {
@@ -32,6 +58,33 @@ todoist.getTodos = async () => {
   }
 };
 
+/**
+ * @swagger
+ * /todos/due:
+ *   get:
+ *     summary: Get due todos
+ *     description: Retrieves todos that are due soon
+ *     tags: [Todos]
+ *     responses:
+ *       200:
+ *         description: List of due todos retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                   content:
+ *                     type: string
+ *                   due:
+ *                     type: string
+ *                     format: date-time
+ *       500:
+ *         description: Server error
+ */
 todoist.getTodosDue = async () => {
   const api = createTodoistApi();
   try {
@@ -43,6 +96,26 @@ todoist.getTodosDue = async () => {
   }
 };
 
+/**
+ * @swagger
+ * /todos/process/stale:
+ *   get:
+ *     summary: Process stale todos
+ *     description: Identifies and processes todos that are stale
+ *     tags: [Todos]
+ *     responses:
+ *       200:
+ *         description: Stale todos processed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Server error
+ */
 todoist.killOld = async () => {
   const api = createTodoistApi();
   try {
@@ -54,6 +127,26 @@ todoist.killOld = async () => {
   }
 };
 
+/**
+ * @swagger
+ * /todos/process/reprioritize:
+ *   get:
+ *     summary: Reprioritize todos
+ *     description: Increases urgency of todos and processes old ones
+ *     tags: [Todos]
+ *     responses:
+ *       200:
+ *         description: Todos reprioritized successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Server error
+ */
 const reprioritize = async () => {
   const api = createTodoistApi();
   try {
@@ -69,6 +162,28 @@ const reprioritize = async () => {
 };
 todoist.reprioritize = reprioritize;
 
+/**
+ * @swagger
+ * /todos/process/new-day:
+ *   get:
+ *     summary: Process new day
+ *     description: Moves todos from focused project to inbox
+ *     tags: [Todos]
+ *     responses:
+ *       200:
+ *         description: New day processed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       404:
+ *         description: No todos found in focused project
+ *       500:
+ *         description: Server error
+ */
 const clearOld = async () => {
   const api = createTodoistApi();
   try {
@@ -89,6 +204,28 @@ const clearOld = async () => {
 };
 todoist.newDay = clearOld;
 
+/**
+ * @swagger
+ * /todos/process/new-day-focus:
+ *   get:
+ *     summary: Set new day focus
+ *     description: Selects and moves top 5 priority todos to focused project
+ *     tags: [Todos]
+ *     responses:
+ *       200:
+ *         description: New focus set successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       404:
+ *         description: No todos found in inbox project
+ *       500:
+ *         description: Server error
+ */
 const newFocus = async () => {
   const api = createTodoistApi();
   try {
@@ -116,6 +253,26 @@ const newFocus = async () => {
 };
 todoist.newDayFocus = newFocus;
 
+/**
+ * @swagger
+ * /todos/summarize:
+ *   get:
+ *     summary: Summarize todos
+ *     description: Generates a summary of todos using GPT
+ *     tags: [Todos]
+ *     responses:
+ *       200:
+ *         description: Todos summarized successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 summary:
+ *                   type: string
+ *       500:
+ *         description: Server error
+ */
 todoist.summarize = async () => {
   try {
     return await summarize();
@@ -126,6 +283,26 @@ todoist.summarize = async () => {
   }
 };
 
+/**
+ * @swagger
+ * /todos/process/categorize:
+ *   get:
+ *     summary: Categorize todos
+ *     description: Uses GPT to categorize todos
+ *     tags: [Todos]
+ *     responses:
+ *       200:
+ *         description: Todos categorized successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 categories:
+ *                   type: object
+ *       500:
+ *         description: Server error
+ */
 todoist.categorize = async () => {
   try {
     return await categorize();
