@@ -9,13 +9,30 @@ import todoist from './api/todoist'
 
 const app = express()
 
-// Middleware to validate hash authentication
-const validateHash = (req, res, next) => {
-  const hash = req.query.hash || req.params.hash;
-  if (!hash || hash !== process.env.HASH) {
-    throw new AuthenticationError('Invalid or missing authentication hash');
+// Middleware to validate cron job authentication
+const validateCronJob = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    throw new AuthenticationError('Invalid or missing cron job authentication');
   }
   next();
+};
+
+// Enhanced error handling for cron jobs
+const handleCronJob = (handler) => async (req, res) => {
+  try {
+    console.log(`[Cron Job] Starting ${req.path} at ${new Date().toISOString()}`);
+    const result = await handler(req.params);
+    console.log(`[Cron Job] Completed ${req.path} successfully`);
+    res.json({ success: true, result });
+  } catch (error) {
+    console.error(`[Cron Job] Failed ${req.path}:`, error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 };
 
 const getAndSend = handleAsync(async (req, res, func) => {
@@ -38,17 +55,17 @@ app.get('/', (req, res) => {
   })
 })
 
-// Apply hash validation to all routes
-app.use(validateHash)
-
+// Public routes
 app.get('/todos', async (req, res) => await getAndSend(req, res, todoist.getTodos))
 app.get('/todos/due', async (req, res) => await getAndSend(req, res, todoist.getTodosDue))
 app.get('/todos/summarize', async (req, res) => await getAndSend(req, res, todoist.summarize))
-app.get('/todos/process/reprioritize', async (req, res) => await getAndSend(req, res, todoist.reprioritize))
-app.get('/todos/process/stale', async (req, res) => await getAndSend(req, res, todoist.killOld))
 app.get('/todos/process/categorize', async (req, res) => await getAndSend(req, res, todoist.categorize))
-app.get('/todos/process/new-day', async (req, res) => await getAndSend(req, res, todoist.newDay))
-app.get('/todos/process/new-day-focus', async (req, res) => await getAndSend(req, res, todoist.newDayFocus))
+
+// Cron job routes with enhanced error handling
+app.get('/todos/process/reprioritize', validateCronJob, handleCronJob(todoist.reprioritize))
+app.get('/todos/process/stale', validateCronJob, handleCronJob(todoist.killOld))
+app.get('/todos/process/new-day', validateCronJob, handleCronJob(todoist.newDay))
+app.get('/todos/process/new-day-focus', validateCronJob, handleCronJob(todoist.newDayFocus))
 
 // Handle 404 errors
 app.use((req, res, next) => {
@@ -64,3 +81,5 @@ app.use(handleError)
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`))
+
+export default app
