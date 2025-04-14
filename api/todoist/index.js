@@ -14,13 +14,53 @@ import {
 } from "./utils";
 import { categorize, summarize } from "./gpt";
 
+/**
+ * Todoist API service
+ * Provides methods to interact with the Todoist API
+ */
 const todoist = () => {};
 
+/**
+ * Creates a Todoist API client
+ * @returns {TodoistApi} Todoist API client
+ * @throws {ExternalServiceError} If TODOIST_TOKEN is not configured
+ */
 const createTodoistApi = () => {
   if (!process.env.TODOIST_TOKEN) {
     throw new ExternalServiceError("TODOIST_TOKEN is not configured");
   }
   return new TodoistApi(process.env.TODOIST_TOKEN);
+};
+
+/**
+ * Gets a Todoist API client instance
+ * Uses a singleton pattern to avoid creating multiple instances
+ * @returns {TodoistApi} Todoist API client
+ */
+const getTodoistApi = (() => {
+  let apiInstance = null;
+  
+  return () => {
+    if (!apiInstance) {
+      apiInstance = createTodoistApi();
+    }
+    return apiInstance;
+  };
+})();
+
+/**
+ * Wraps an API call with error handling
+ * @param {Function} apiCall - The API call to execute
+ * @param {string} errorMessage - The error message to use if the call fails
+ * @returns {Promise<any>} The result of the API call
+ * @throws {ExternalServiceError} If the API call fails
+ */
+const withErrorHandling = async (apiCall, errorMessage) => {
+  try {
+    return await apiCall();
+  } catch (error) {
+    throw new ExternalServiceError(`${errorMessage}: ${error.message}`);
+  }
 };
 
 /**
@@ -50,12 +90,13 @@ const createTodoistApi = () => {
  *         description: Server error
  */
 todoist.getTodos = async () => {
-  const api = createTodoistApi();
-  try {
-    return await getTodosAll(api);
-  } catch (error) {
-    throw new ExternalServiceError(`Failed to fetch todos: ${error.message}`);
-  }
+  return withErrorHandling(
+    async () => {
+      const api = getTodoistApi();
+      return await getTodosAll(api);
+    },
+    "Failed to fetch todos"
+  );
 };
 
 /**
@@ -86,14 +127,13 @@ todoist.getTodos = async () => {
  *         description: Server error
  */
 todoist.getTodosDue = async () => {
-  const api = createTodoistApi();
-  try {
-    return await getTodosDue(api);
-  } catch (error) {
-    throw new ExternalServiceError(
-      `Failed to fetch due todos: ${error.message}`
-    );
-  }
+  return withErrorHandling(
+    async () => {
+      const api = getTodoistApi();
+      return await getTodosDue(api);
+    },
+    "Failed to fetch due todos"
+  );
 };
 
 /**
@@ -117,14 +157,13 @@ todoist.getTodosDue = async () => {
  *         description: Server error
  */
 todoist.killOld = async () => {
-  const api = createTodoistApi();
-  try {
-    return await killOld(api);
-  } catch (error) {
-    throw new ExternalServiceError(
-      `Failed to process old todos: ${error.message}`
-    );
-  }
+  return withErrorHandling(
+    async () => {
+      const api = getTodoistApi();
+      return await killOld(api);
+    },
+    "Failed to process old todos"
+  );
 };
 
 /**
@@ -147,20 +186,18 @@ todoist.killOld = async () => {
  *       500:
  *         description: Server error
  */
-const reprioritize = async () => {
-  const api = createTodoistApi();
-  try {
-    const done1 = await increaseUrgency(api);
-    const done2 = await killOld(api);
-    const done3 = await newDay();
-    return `${done1} ${done2} ${done3}`;
-  } catch (error) {
-    throw new ExternalServiceError(
-      `Failed to reprioritize todos: ${error.message}`
-    );
-  }
+todoist.reprioritize = async () => {
+  return withErrorHandling(
+    async () => {
+      const api = getTodoistApi();
+      const done1 = await increaseUrgency(api);
+      const done2 = await killOld(api);
+      const done3 = await todoist.newDay();
+      return `${done1} ${done2} ${done3}`;
+    },
+    "Failed to reprioritize todos"
+  );
 };
-todoist.reprioritize = reprioritize;
 
 /**
  * @swagger
@@ -184,25 +221,20 @@ todoist.reprioritize = reprioritize;
  *       500:
  *         description: Server error
  */
-const clearOld = async () => {
-  const api = createTodoistApi();
-  try {
-    const todos = await getTodos(api, PROJECT_ID_FOCUSED);
-    if (!todos || todos.length === 0) {
-      throw new NotFoundError("No todos found in focused project");
-    }
-    await moveToProject(api, todos, PROJECT_ID_INBOX);
-    return "DONE";
-  } catch (error) {
-    if (error instanceof NotFoundError) {
-      throw error;
-    }
-    throw new ExternalServiceError(
-      `Failed to clear old todos: ${error.message}`
-    );
-  }
+todoist.newDay = async () => {
+  return withErrorHandling(
+    async () => {
+      const api = getTodoistApi();
+      const todos = await getTodos(api, PROJECT_ID_FOCUSED);
+      if (!todos || todos.length === 0) {
+        throw new NotFoundError("No todos found in focused project");
+      }
+      await moveToProject(api, todos, PROJECT_ID_INBOX);
+      return "DONE";
+    },
+    "Failed to clear old todos"
+  );
 };
-todoist.newDay = clearOld;
 
 /**
  * @swagger
@@ -226,32 +258,29 @@ todoist.newDay = clearOld;
  *       500:
  *         description: Server error
  */
-const newFocus = async () => {
-  const api = createTodoistApi();
-  try {
-    const todos = await getTodos(api, PROJECT_ID_INBOX);
-    if (!todos || todos.length === 0) {
-      throw new NotFoundError("No todos found in inbox project");
-    }
+todoist.newDayFocus = async () => {
+  return withErrorHandling(
+    async () => {
+      const api = getTodoistApi();
+      const todos = await getTodos(api, PROJECT_ID_INBOX);
+      if (!todos || todos.length === 0) {
+        throw new NotFoundError("No todos found in inbox project");
+      }
 
-    todos.sort((a, b) => b.priority - a.priority);
-    const focusTodos = todos.slice(0, 5);
+      todos.sort((a, b) => b.priority - a.priority);
+      const focusTodos = todos.slice(0, 5);
 
-    if (focusTodos.length === 0) {
-      throw new NotFoundError("No todos available to focus");
-    }
+      if (focusTodos.length === 0) {
+        throw new NotFoundError("No todos available to focus");
+      }
 
-    await bumpPriorities(api, focusTodos);
-    await moveToProject(api, focusTodos, PROJECT_ID_FOCUSED);
-    return "DONE";
-  } catch (error) {
-    if (error instanceof NotFoundError) {
-      throw error;
-    }
-    throw new ExternalServiceError(`Failed to set new focus: ${error.message}`);
-  }
+      await bumpPriorities(api, focusTodos);
+      await moveToProject(api, focusTodos, PROJECT_ID_FOCUSED);
+      return "DONE";
+    },
+    "Failed to set new focus"
+  );
 };
-todoist.newDayFocus = newFocus;
 
 /**
  * @swagger
@@ -274,13 +303,12 @@ todoist.newDayFocus = newFocus;
  *         description: Server error
  */
 todoist.summarize = async () => {
-  try {
-    return await summarize();
-  } catch (error) {
-    throw new ExternalServiceError(
-      `Failed to summarize todos: ${error.message}`
-    );
-  }
+  return withErrorHandling(
+    async () => {
+      return await summarize();
+    },
+    "Failed to summarize todos"
+  );
 };
 
 /**
@@ -304,13 +332,12 @@ todoist.summarize = async () => {
  *         description: Server error
  */
 todoist.categorize = async () => {
-  try {
-    return await categorize();
-  } catch (error) {
-    throw new ExternalServiceError(
-      `Failed to categorize todos: ${error.message}`
-    );
-  }
+  return withErrorHandling(
+    async () => {
+      return await categorize();
+    },
+    "Failed to categorize todos"
+  );
 };
 
 export default todoist;
