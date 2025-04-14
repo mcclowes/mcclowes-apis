@@ -99,6 +99,7 @@ app.get('/todos/process/reprioritize', validateCronJob, handleCronJob(todoist.re
 app.get('/todos/process/stale', validateCronJob, handleCronJob(todoist.killOld))
 app.get('/todos/process/new-day', validateCronJob, handleCronJob(todoist.newDay))
 app.get('/todos/process/new-day-focus', validateCronJob, handleCronJob(todoist.newDayFocus))
+app.get('/todos/process/categorize', validateCronJob, handleCronJob(todoist.categorize))
 
 // Handle 404 errors
 app.use((req, res, next) => {
