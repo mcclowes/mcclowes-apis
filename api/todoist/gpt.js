@@ -1,5 +1,5 @@
 import { TodoistApi } from "@doist/todoist-api-typescript";
-import { Configuration, OpenAIApi } from "openai";
+import OpenAI from "openai";
 import { getTodosDue, getLabels } from "./utils";
 
 export const summarize = async () => {
@@ -7,11 +7,9 @@ export const summarize = async () => {
 
   const todos = await getTodosDue(api, false, 3);
 
-  const configuration = new Configuration({
+  const openai = new OpenAI({
     apiKey: process.env.OPENAI_KEY,
   });
-
-  const openai = new OpenAIApi(configuration);
 
   const prompt = `This is my todo list in a JSON format:
     ${todos}
@@ -55,7 +53,7 @@ export const summarize = async () => {
     { role: "user", content: prompt },
   ];
 
-  const response = await openai.createChatCompletion({
+  const response = await openai.chat.completions.create({
     model: "gpt-3.5-turbo",
     messages: messages,
     temperature: 0.8,
@@ -63,7 +61,7 @@ export const summarize = async () => {
     max_tokens: 120,
   });
 
-  return response.data.choices[0].message.content;
+  return response.choices[0].message.content;
 };
 
 const invalidLabels = [
@@ -107,11 +105,9 @@ const addLabel = async (todo, label, validLabels) => {
 };
 
 const categorizeTask = async (todo, validLabels) => {
-  const configuration = new Configuration({
+  const openai = new OpenAI({
     apiKey: process.env.OPENAI_KEY,
   });
-
-  const openai = new OpenAIApi(configuration);
 
   const messages = [
     {
@@ -136,7 +132,7 @@ const categorizeTask = async (todo, validLabels) => {
     },
   ];
 
-  const response = await openai.createChatCompletion({
+  const response = await openai.chat.completions.create({
     model: "gpt-3.5-turbo",
     messages: messages,
     temperature: 0.8,
@@ -144,7 +140,7 @@ const categorizeTask = async (todo, validLabels) => {
     max_tokens: 3,
   });
 
-  const label = response.data.choices[0].message.content;
+  const label = response.choices[0].message.content;
 
   await addLabel(todo, label, validLabels);
 };
@@ -171,7 +167,6 @@ export const categorize = async (tasks = null) => {
   );
 
   // Use the latest OpenAI API
-  const { OpenAI } = require('openai');
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_KEY,
   });
