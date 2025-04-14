@@ -1,6 +1,6 @@
 import { TodoistApi } from "@doist/todoist-api-typescript";
 import { Configuration, OpenAIApi } from "openai";
-import { getTodosDue } from "./utils";
+import { getTodosDue, getLabels } from "./utils";
 
 export const summarize = async () => {
   const api = new TodoistApi(process.env.TODOIST_TOKEN);
@@ -165,7 +165,7 @@ export const categorize = async (tasks = null) => {
       .filter((todo, i) => i <= 15);
   }
 
-  const labels = await getLabels();
+  const labels = await getLabels(api);
   const validLabels = labels.filter(
     (label) => invalidLabels.indexOf(label.name) === -1
   );

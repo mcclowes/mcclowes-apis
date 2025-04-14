@@ -21,7 +21,7 @@ const getTime = (days) => {
  * @param {Object} api - Todoist API client
  * @returns {Promise<Array>} Array of labels
  */
-const getLabels = async (api) => {
+export const getLabels = async (api) => {
   try {
     return await api.getLabels();
   } catch (error) {
