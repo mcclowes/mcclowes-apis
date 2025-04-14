@@ -149,20 +149,147 @@ const categorizeTasks = async (todos, validLabels) => {
   return Promise.all(todos.map((todo) => categorizeTask(todo, validLabels)));
 };
 
-export const categorize = async () => {
+export const categorize = async (tasks = null) => {
   const api = new TodoistApi(process.env.TODOIST_TOKEN);
-
-  const todos = await getTodosDue(api, true, 0);
-  const todosToCategorize = todos
-    ?.filter((todo) => todo.labels?.length <= 1)
-    .filter((todo, i) => i <= 15);
+  
+  // If no tasks provided, fetch them from Todoist
+  let tasksToCategorize = tasks;
+  if (!tasks) {
+    const todos = await getTodosDue(api, true, 0);
+    tasksToCategorize = todos
+      ?.filter((todo) => todo.labels?.length <= 1)
+      .filter((todo, i) => i <= 15);
+  }
 
   const labels = await getLabels();
   const validLabels = labels.filter(
     (label) => invalidLabels.indexOf(label.name) === -1
   );
 
-  const repsonses = await categorizeTasks(todosToCategorize, validLabels);
+  // Use the latest OpenAI API
+  const { OpenAI } = require('openai');
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_KEY,
+  });
 
-  return repsonses;
+  // Prepare the tasks for categorization
+  const tasksForPrompt = tasksToCategorize.map(task => ({
+    id: task.id,
+    content: task.content,
+    due: task.due ? task.due.date : null,
+    priority: task.priority
+  }));
+
+  // Define the function for structured output
+  const categorizeFunction = {
+    name: "categorize_tasks",
+    description: "Categorize tasks with appropriate labels",
+    parameters: {
+      type: "object",
+      properties: {
+        categorized_tasks: {
+          type: "array",
+          description: "List of tasks with their assigned categories",
+          items: {
+            type: "object",
+            properties: {
+              task_id: {
+                type: "string",
+                description: "The ID of the task"
+              },
+              content: {
+                type: "string",
+                description: "The content of the task"
+              },
+              category: {
+                type: "string",
+                description: "The category assigned to the task",
+                enum: validLabels.map(label => label.name)
+              },
+              confidence: {
+                type: "number",
+                description: "Confidence score for the categorization (0-1)",
+                minimum: 0,
+                maximum: 1
+              },
+              reasoning: {
+                type: "string",
+                description: "Brief explanation of why this category was chosen"
+              }
+            },
+            required: ["task_id", "content", "category", "confidence"]
+          }
+        }
+      },
+      required: ["categorized_tasks"]
+    }
+  };
+
+  // Create the prompt for the model
+  const prompt = `I have a list of tasks that need to be categorized. 
+  Please analyze each task and assign it to the most appropriate category from the available labels.
+  
+  Available categories: ${validLabels.map(label => label.name).join(', ')}
+  
+  Consider the task content, due date, and priority when making your decision.
+  If a task doesn't clearly fit into any category, choose the best match and provide a low confidence score.
+  
+  Tasks to categorize:
+  ${JSON.stringify(tasksForPrompt, null, 2)}`;
+
+  // Call the OpenAI API with function calling
+  const response = await openai.chat.completions.create({
+    model: "gpt-4",
+    messages: [
+      {
+        role: "system",
+        content: "You are a task categorization assistant. Your job is to analyze tasks and assign them to the most appropriate categories based on their content and context."
+      },
+      {
+        role: "user",
+        content: prompt
+      }
+    ],
+    functions: [categorizeFunction],
+    function_call: { name: "categorize_tasks" },
+    temperature: 0.3,
+  });
+
+  // Parse the function call response
+  const functionResponse = JSON.parse(response.choices[0].message.function_call.arguments);
+  
+  // If tasks were provided as input, just return the categorization
+  if (tasks) {
+    return functionResponse;
+  }
+  
+  // Otherwise, update the tasks in Todoist with their new labels
+  const results = await Promise.all(
+    functionResponse.categorized_tasks.map(async (categorizedTask) => {
+      const task = tasksToCategorize.find(t => t.id === categorizedTask.task_id);
+      if (task && categorizedTask.confidence > 0.3) {
+        await addLabel(task, categorizedTask.category, validLabels);
+        return {
+          task_id: categorizedTask.task_id,
+          content: categorizedTask.content,
+          category: categorizedTask.category,
+          confidence: categorizedTask.confidence,
+          applied: true
+        };
+      }
+      return {
+        task_id: categorizedTask.task_id,
+        content: categorizedTask.content,
+        category: categorizedTask.category,
+        confidence: categorizedTask.confidence,
+        applied: false
+      };
+    })
+  );
+
+  return {
+    categorized_tasks: results,
+    total_tasks: tasksToCategorize.length,
+    tasks_categorized: results.filter(r => r.applied).length
+  };
 };
