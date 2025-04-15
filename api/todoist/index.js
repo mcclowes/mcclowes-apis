@@ -229,7 +229,7 @@ todoist.newDay = async () => {
       if (!todos || todos.length === 0) {
         throw new NotFoundError("No todos found in focused project");
       }
-      await moveToProject(api, todos, PROJECT_ID_INBOX);
+      await moveToProject(todos, PROJECT_ID_INBOX);
       return "DONE";
     },
     "Failed to clear old todos"
