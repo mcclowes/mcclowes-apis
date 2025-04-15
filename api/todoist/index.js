@@ -275,7 +275,7 @@ todoist.newDayFocus = async () => {
       }
 
       await bumpPriorities(api, focusTodos);
-      await moveToProject(api, focusTodos, PROJECT_ID_FOCUSED);
+      await moveToProject(focusTodos, PROJECT_ID_FOCUSED);
       return "DONE";
     },
     "Failed to set new focus"
