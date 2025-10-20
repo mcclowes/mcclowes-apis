@@ -5,27 +5,5 @@
   "routes": [
     { "src": "/api-docs/(.*)", "dest": "/index.js" },
     { "src": "/(.*)", "dest": "/index.js" }
-  ],
-  "crons": [
-    {
-      "path": "/todos/process/reprioritize",
-      "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/todos/process/new-day",
-      "schedule": "0 3 * * *"
-    },
-    {
-      "path": "/todos/process/new-day-focus",
-      "schedule": "0 4 * * *"
-    },
-    {
-      "path": "/todos/process/stale",
-      "schedule": "0 3 1 * *"
-    },
-    {
-      "path": "/todos/process/categorize",
-      "schedule": "0 5 * * 0"
-    }
   ]
 }
