@@ -21,7 +21,7 @@
     "url": "git+https://github.com/mcclowes/what-the-fpl-api.git"
   },
   "engines": {
-    "node": "18.x"
+    "node": "22.x"
   },
   "author": "mcclowes",
   "license": "ISC",
