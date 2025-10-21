@@ -1,11 +1,12 @@
 import fetch from "node-fetch";
-import uuid4 from "uuid4";
+import { randomUUID } from "crypto";
 
 //const NTFY_URL = "https://ntfy.sh/mcclowes_api";
 
-export const PROJECT_ID_INBOX = "2254468009";
-export const PROJECT_ID_FOCUSED = "2299051453";
-export const PROJECT_ID_WORK = "2304777035";
+// Project IDs from environment variables
+export const PROJECT_ID_INBOX = process.env.PROJECT_ID_INBOX || "2254468009";
+export const PROJECT_ID_FOCUSED = process.env.PROJECT_ID_FOCUSED || "2299051453";
+export const PROJECT_ID_WORK = process.env.PROJECT_ID_WORK || "2304777035";
 
 /**
  * Converts days to milliseconds
@@ -219,7 +220,7 @@ export const moveToProject = async (todos, project = PROJECT_ID_INBOX) => {
             id: todo.id,
             project_id: project,
           },
-          uuid: uuid4(),
+          uuid: randomUUID(),
         };
       }),
     ],

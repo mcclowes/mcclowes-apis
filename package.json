@@ -20,7 +20,7 @@
     "url": "git+https://github.com/mcclowes/what-the-fpl-api.git"
   },
   "engines": {
-    "node": "18.x"
+    "node": "22.x"
   },
   "author": "mcclowes",
   "license": "ISC",
@@ -29,15 +29,15 @@
   },
   "homepage": "https://github.com/mcclowes/what-the-fpl-api#readme",
   "dependencies": {
-    "@doist/todoist-api-typescript": "^2.1.2",
-    "node-fetch": "^2.6.2",
-    "openai": "^3.2.1",
-    "uuid4": "^2.0.3"
+    "@doist/todoist-api-typescript": "^3.0.0",
+    "node-fetch": "^2.7.0",
+    "openai": "^4.28.0"
   },
   "devDependencies": {
-    "jest": "^26.6.3",
-    "prettier": "^2.3.0",
-    "pretty-quick": "^3.1.1",
+    "husky": "^9.0.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.2.0",
+    "pretty-quick": "^4.0.0",
     "vercel": "latest"
   }
 }

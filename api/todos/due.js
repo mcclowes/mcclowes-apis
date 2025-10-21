@@ -1,5 +1,5 @@
 import { withErrorHandling } from '../../_lib/errors.js';
-import { getTodoistApi } from '../../_lib/todoist.js';
+import { getTodoistApi } from '../todoist/client.js';
 import { getTodosDue } from '../todoist/utils.js';
 
 /**

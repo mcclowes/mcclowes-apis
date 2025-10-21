@@ -1,4 +1,4 @@
-import { AuthenticationError } from './errors.js';
+import { AuthenticationError } from '../api/errors/AppError.js';
 
 /**
  * Validates hash-based authentication from query parameters

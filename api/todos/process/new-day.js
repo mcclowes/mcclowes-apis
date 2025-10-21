@@ -1,6 +1,7 @@
-import { withErrorHandling, NotFoundError } from '../../../_lib/errors.js';
+import { withErrorHandling } from '../../../_lib/errors.js';
+import { NotFoundError } from '../../../api/errors/AppError.js';
 import { validateCronJob } from '../../../_lib/auth.js';
-import { getTodoistApi } from '../../../_lib/todoist.js';
+import { getTodoistApi } from '../../todoist/client.js';
 import { getTodos, moveToProject, PROJECT_ID_FOCUSED, PROJECT_ID_INBOX } from '../../todoist/utils.js';
 
 /**

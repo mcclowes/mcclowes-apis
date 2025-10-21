@@ -1,6 +1,6 @@
 import { withErrorHandling } from '../../../_lib/errors.js';
 import { validateCronJob } from '../../../_lib/auth.js';
-import { getTodoistApi } from '../../../_lib/todoist.js';
+import { getTodoistApi } from '../../todoist/client.js';
 import { increaseUrgency, killOld } from '../../todoist/utils.js';
 
 /**

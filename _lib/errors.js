@@ -1,50 +1,10 @@
 /**
- * Base application error class
+ * Serverless-specific error handling utilities
+ * Error classes are imported from api/errors/AppError.js
  */
-export class AppError extends Error {
-  constructor(message, statusCode = 500, code = "INTERNAL_SERVER_ERROR") {
-    super(message);
-    this.statusCode = statusCode;
-    this.code = code;
-    this.status = `${statusCode}`.startsWith("4") ? "fail" : "error";
-    this.isOperational = true;
-
-    Error.captureStackTrace(this, this.constructor);
-  }
-}
-
-export class ValidationError extends AppError {
-  constructor(message) {
-    super(message, 400, "VALIDATION_ERROR");
-  }
-}
-
-export class NotFoundError extends AppError {
-  constructor(message) {
-    super(message, 404, "NOT_FOUND");
-  }
-}
-
-export class AuthenticationError extends AppError {
-  constructor(message) {
-    super(message, 401, "AUTHENTICATION_ERROR");
-  }
-}
-
-export class AuthorizationError extends AppError {
-  constructor(message) {
-    super(message, 403, "AUTHORIZATION_ERROR");
-  }
-}
-
-export class ExternalServiceError extends AppError {
-  constructor(message) {
-    super(message, 502, "EXTERNAL_SERVICE_ERROR");
-  }
-}
 
 /**
- * Handles errors and sends appropriate response
+ * Handles errors and sends appropriate response for serverless functions
  * @param {Error} err - The error to handle
  * @param {object} res - Response object
  */
@@ -83,7 +43,7 @@ export const handleError = (err, res) => {
 };
 
 /**
- * Wraps an async handler with error handling
+ * Wraps an async handler with error handling for serverless functions
  * @param {Function} handler - Async handler function
  * @returns {Function} Wrapped handler
  */
