@@ -1,0 +1,7 @@
+index.old.js
+.babelrc
+.circleci
+node_modules
+.git
+.env
+*.md
