@@ -6,27 +6,49 @@ import swaggerUi from 'swagger-ui-express'
 import { handleError, handleAsync } from './api/errors/errorHandler'
 import { AuthenticationError } from './api/errors/AppError'
 import { specs } from './api/docs/swagger'
+import { validateEnvVariables, validateAuthHash, validateBearerToken } from './api/middleware/validation'
 
 import todoist from './api/todoist'
+
+// Validate required environment variables on startup
+try {
+  validateEnvVariables();
+  console.log('✓ Environment variables validated');
+} catch (error) {
+  console.error('✗ Environment validation failed:', error.message);
+  process.exit(1);
+}
 
 const app = express()
 
 // Middleware to validate hash authentication
 const validateHash = (req, res, next) => {
-  const hash = req.query.hash || req.params.hash;
-  if (!hash || hash !== process.env.HASH) {
-    throw new AuthenticationError('Invalid or missing authentication hash');
+  try {
+    const hash = req.query.hash || req.params.hash;
+    validateAuthHash(hash);
+
+    if (hash !== process.env.HASH) {
+      throw new AuthenticationError('Invalid authentication hash');
+    }
+    next();
+  } catch (error) {
+    next(error);
   }
-  next();
 };
 
 // Middleware to validate cron job authentication
 const validateCronJob = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    throw new AuthenticationError('Invalid or missing cron job authentication');
+  try {
+    const authHeader = req.headers.authorization;
+    validateBearerToken(authHeader);
+
+    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+      throw new AuthenticationError('Invalid cron job authentication');
+    }
+    next();
+  } catch (error) {
+    next(error);
   }
-  next();
 };
 
 // Enhanced error handling for cron jobs

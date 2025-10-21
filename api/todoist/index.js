@@ -1,5 +1,5 @@
-import { TodoistApi } from "@doist/todoist-api-typescript";
 import { ExternalServiceError, NotFoundError } from "../errors/AppError";
+import { getTodoistApi } from "./client";
 
 import {
   bumpPriorities,
@@ -19,34 +19,6 @@ import { categorize, summarize } from "./gpt";
  * Provides methods to interact with the Todoist API
  */
 const todoist = () => {};
-
-/**
- * Creates a Todoist API client
- * @returns {TodoistApi} Todoist API client
- * @throws {ExternalServiceError} If TODOIST_TOKEN is not configured
- */
-const createTodoistApi = () => {
-  if (!process.env.TODOIST_TOKEN) {
-    throw new ExternalServiceError("TODOIST_TOKEN is not configured");
-  }
-  return new TodoistApi(process.env.TODOIST_TOKEN);
-};
-
-/**
- * Gets a Todoist API client instance
- * Uses a singleton pattern to avoid creating multiple instances
- * @returns {TodoistApi} Todoist API client
- */
-const getTodoistApi = (() => {
-  let apiInstance = null;
-  
-  return () => {
-    if (!apiInstance) {
-      apiInstance = createTodoistApi();
-    }
-    return apiInstance;
-  };
-})();
 
 /**
  * Wraps an API call with error handling
