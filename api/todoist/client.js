@@ -1,5 +1,5 @@
 import { TodoistApi } from "@doist/todoist-api-typescript";
-import { ExternalServiceError } from "../errors/AppError";
+import { ExternalServiceError } from "../errors/AppError.js";
 
 /**
  * Creates a Todoist API client

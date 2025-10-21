@@ -1,5 +1,5 @@
-import { ExternalServiceError, NotFoundError } from "../errors/AppError";
-import { getTodoistApi } from "./client";
+import { ExternalServiceError, NotFoundError } from "../errors/AppError.js";
+import { getTodoistApi } from "./client.js";
 
 import {
   bumpPriorities,
@@ -11,8 +11,8 @@ import {
   moveToProject,
   PROJECT_ID_INBOX,
   PROJECT_ID_FOCUSED,
-} from "./utils";
-import { categorize, summarize } from "./gpt";
+} from "./utils.js";
+import { categorize, summarize } from "./gpt.js";
 
 /**
  * Todoist API service
