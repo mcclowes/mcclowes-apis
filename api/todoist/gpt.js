@@ -1,6 +1,6 @@
 import OpenAI from "openai";
-import { getTodosDue, getLabels } from "./utils";
-import { getTodoistApi } from "./client";
+import { getTodosDue, getLabels } from "./utils.js";
+import { getTodoistApi } from "./client.js";
 
 export const summarize = async () => {
   const api = getTodoistApi();

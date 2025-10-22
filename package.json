@@ -1,13 +1,12 @@
 {
   "name": "mcclowes-api",
-  "version": "1.1.0",
-  "description": "Process FPL and Gambling API",
-  "main": "index.js",
+  "version": "2.0.0",
+  "description": "Todoist API - Vercel Serverless Functions",
+  "type": "module",
   "scripts": {
-    "start": "babel-node .",
-    "dev": "NODE_ENV='development' nodemon --exec babel-node .",
-    "format": "prettier --write \"api/**/*.js\"",
-    "format:staged": "pretty-quick --staged --pattern ./api/**",
+    "dev": "vercel dev",
+    "format": "prettier --write \"api/**/*.js\" \"_lib/**/*.js\"",
+    "format:staged": "pretty-quick --staged --pattern \"./api/**\" \"./lib/**\"",
     "test": "jest",
     "test:watch": "jest --watchAll"
   },
@@ -30,29 +29,15 @@
   },
   "homepage": "https://github.com/mcclowes/what-the-fpl-api#readme",
   "dependencies": {
-    "@babel/cli": "^7.24.0",
-    "@babel/core": "^7.24.0",
-    "@babel/node": "^7.24.0",
-    "@babel/plugin-transform-runtime": "^7.24.0",
-    "@babel/preset-env": "^7.24.0",
-    "@babel/runtime": "^7.24.0",
     "@doist/todoist-api-typescript": "^3.0.0",
-    "core-js": "^3.36.0",
-    "dotenv": "^16.4.0",
-    "express": "^4.18.0",
-    "moment": "^2.30.0",
     "node-fetch": "^2.7.0",
-    "openai": "^4.28.0",
-    "regenerator-runtime": "^0.14.0",
-    "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.0"
+    "openai": "^4.28.0"
   },
   "devDependencies": {
-    "babel-jest": "^29.7.0",
     "husky": "^9.0.0",
     "jest": "^29.7.0",
-    "nodemon": "^3.1.0",
     "prettier": "^3.2.0",
-    "pretty-quick": "^4.0.0"
+    "pretty-quick": "^4.0.0",
+    "vercel": "latest"
   }
 }
