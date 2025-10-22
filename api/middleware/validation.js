@@ -1,4 +1,4 @@
-import { ValidationError } from "../errors/AppError";
+import { ValidationError } from "../errors/AppError.js";
 
 /**
  * Validates that required environment variables are set
