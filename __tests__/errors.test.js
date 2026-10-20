@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { handleError, withErrorHandling } from '../_lib/errors.js';
 import { AppError } from '../api/errors/AppError.js';
 

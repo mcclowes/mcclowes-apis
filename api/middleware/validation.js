@@ -53,8 +53,8 @@ export const validateBearerToken = (token) => {
  * @returns {Object} Validated pagination parameters
  */
 export const validatePagination = (params = {}) => {
-  const limit = params.limit ? parseInt(params.limit, 10) : 50;
-  const offset = params.offset ? parseInt(params.offset, 10) : 0;
+  const limit = params.limit != null && params.limit !== "" ? parseInt(params.limit, 10) : 50;
+  const offset = params.offset != null && params.offset !== "" ? parseInt(params.offset, 10) : 0;
 
   if (isNaN(limit) || limit < 1 || limit > 100) {
     throw new ValidationError("Limit must be a number between 1 and 100");
